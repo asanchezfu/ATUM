@@ -31,6 +31,3 @@ Atum is more than just code generation:
 - **Database (planned):** PostgreSQL / Vector DB  
 
 ---
-
-git clone https://github.com/your-username/atum.git
-cd atum
