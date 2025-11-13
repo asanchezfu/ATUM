@@ -1,0 +1,23 @@
+RuleType: Task
+Title: Atum Contest — Generate Tests Endpoint & Frontend Wiring
+Tags: [fastapi, frontend, contest]
+
+When the user asks you to work on the "contest task", follow these steps:
+
+1. Read AGENTS.md and existing backend routers to match their structure.
+2. Sketch a plan in Markdown and show it to the user briefly.
+3. Implement the backend endpoint:
+   - New router file if needed (e.g., app/routers/generate_tests.py).
+   - Pydantic models for request/response.
+   - Router mounted under /api/v1 in app/main.py or equivalent.
+4. Adapt the frontend:
+   - Connect view to `POST /generate` endpoint. 
+   - Add a new view/route or component for "Generate Tests".
+   - Hook up a form -> POST /api/v1/generate-tests -> display response.
+5. Manual sanity check:
+   - Run app locally (uvicorn) and hit backend endpoint.
+   - Check frontend behavior.
+6. Create a Git branch, commit changes, and (if gh is available) open a PR.
+7. If you cannot complete, write a detailed POC_ERROR_REPORT.md.
+
+Always explain major architectural choices in the PR description.
