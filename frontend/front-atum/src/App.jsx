@@ -1,23 +1,106 @@
 
 import { useState } from 'react';
 
+// API base URL - adjust if backend runs on different port
+const API_BASE_URL = 'http://localhost:8000';
+
 function App() {
   const [query, setQuery] = useState('');
   const [language, setLanguage] = useState('');
+  const [framework, setFramework] = useState('');
   const [generatedCode, setGeneratedCode] = useState('');
+  const [generatedTests, setGeneratedTests] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingTests, setLoadingTests] = useState(false);
+  const [error, setError] = useState('');
 
-  // Simulate code generation
-  const handleGenerate = () => {
+  // Generate code using POST /generate endpoint
+  const handleGenerate = async () => {
     if (!query) {
       alert('Please describe the code you want to generate');
       return;
     }
+    if (!language) {
+      alert('Please select a programming language');
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
-      setGeneratedCode(`// Sample ${language} code for: ${query}\nfunction example() {\n  // ...\n}`);
+    setError('');
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: query,
+          language: language,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setGeneratedCode(data.generated_code || '// No code generated');
+    } catch (err) {
+      setError(`Error generating code: ${err.message}`);
+      console.error('Error:', err);
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
+  };
+
+  // Generate tests using POST /api/v1/generate-tests endpoint
+  const handleGenerateTests = async () => {
+    if (!generatedCode || generatedCode.trim() === '' || generatedCode.includes('Your generated code will appear here')) {
+      alert('Please generate some code first');
+      return;
+    }
+    if (!language) {
+      alert('Please select a programming language');
+      return;
+    }
+    if (!framework) {
+      alert('Please select a testing framework');
+      return;
+    }
+
+    setLoadingTests(true);
+    setError('');
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/generate-tests`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: generatedCode,
+          language: language,
+          framework: framework,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.ok && data.tests) {
+        setGeneratedTests(data.tests);
+      } else {
+        setError(`Error: ${data.notes?.join(', ') || 'Failed to generate tests'}`);
+      }
+    } catch (err) {
+      setError(`Error generating tests: ${err.message}`);
+      console.error('Error:', err);
+    } finally {
+      setLoadingTests(false);
+    }
   };
 
   return (
@@ -90,6 +173,13 @@ function App() {
             </div>
           </section>
 
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded font-poppins">
+              {error}
+            </div>
+          )}
+
           {/* Results Section */}
           <section>
             <div className="bg-white rounded-xl shadow-md overflow-hidden mb-6">
@@ -104,7 +194,7 @@ function App() {
                 </div>
               </div>
               <div className="p-6">
-                <pre className="bg-gray-100 p-4 rounded-lg text-sm overflow-x-auto animate-pulse font-poppins">
+                <pre className="bg-gray-100 p-4 rounded-lg text-sm overflow-x-auto font-poppins">
                   <code className="text-gray-800">
                     {generatedCode || '// Your generated code will appear here\n// Describe what you need and click "Generate Code"'}
                   </code>
@@ -134,8 +224,43 @@ function App() {
               </div>
               <h3 className="text-xl font-semibold text-gray-800 mb-2 font-poppins">Unit Tests</h3>
               <p className="text-gray-600 mb-4 font-poppins">Automatically generate comprehensive test cases</p>
-              <button className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full flex items-center transition-colors duration-300 hover:scale-105 font-poppins">
-                <i className="fas fa-sparkles mr-2"></i> Generate
+              <div className="w-full mb-3">
+                <select
+                  className="w-full px-3 py-2 rounded-lg text-sm bg-white border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 font-poppins"
+                  value={framework}
+                  onChange={e => setFramework(e.target.value)}
+                >
+                  <option value="" disabled>Select framework</option>
+                  {language === 'python' && (
+                    <>
+                      <option value="pytest">pytest</option>
+                      <option value="unittest">unittest</option>
+                    </>
+                  )}
+                  {language === 'javascript' && (
+                    <>
+                      <option value="jest">Jest</option>
+                      <option value="mocha">Mocha</option>
+                    </>
+                  )}
+                  {language === 'java' && (
+                    <option value="junit">JUnit</option>
+                  )}
+                  {language && !['python', 'javascript', 'java'].includes(language) && (
+                    <option value="default">Default</option>
+                  )}
+                </select>
+              </div>
+              <button
+                className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full flex items-center transition-colors duration-300 hover:scale-105 font-poppins"
+                onClick={handleGenerateTests}
+                disabled={loadingTests}
+              >
+                {loadingTests ? (
+                  <><i className="fas fa-spinner fa-spin mr-2"></i> Generating...</>
+                ) : (
+                  <><i className="fas fa-sparkles mr-2"></i> Generate</>
+                )}
               </button>
             </div>
 
@@ -151,6 +276,30 @@ function App() {
               </button>
             </div>
           </section>
+
+          {/* Generated Tests Section */}
+          {generatedTests && (
+            <section className="mt-6">
+              <div className="bg-white rounded-xl shadow-md overflow-hidden mb-6">
+                <div className="bg-gray-50 px-6 py-4 border-b flex justify-between items-center">
+                  <h2 className="text-lg font-semibold text-gray-800 font-poppins">Generated Unit Tests</h2>
+                  <div className="flex space-x-2">
+                    <button className="text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded flex items-center transition-all duration-300 hover:scale-105 font-poppins"
+                      onClick={() => navigator.clipboard.writeText(generatedTests)}>
+                      <i className="fas fa-copy mr-1"></i> Copy
+                    </button>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <pre className="bg-gray-100 p-4 rounded-lg text-sm overflow-x-auto font-poppins">
+                    <code className="text-gray-800">
+                      {generatedTests}
+                    </code>
+                  </pre>
+                </div>
+              </div>
+            </section>
+          )}
         </main>
 
         {/* Footer */}
