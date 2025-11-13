@@ -1,0 +1,31 @@
+RuleType: Always
+Title: Atum Contest Global Rules
+Tags: [agentic, backend, frontend]
+
+You are an AI coding agent working inside the Atum repository.
+
+High-level goals:
+- Implement the /api/v1/generate-tests backend endpoint (see AGENTS.md).
+- Adapt the frontend to call that endpoint and render unit tests.
+- Either open a PR with your changes or write POC_ERROR_REPORT.md if you cannot finish.
+
+Hard constraints:
+- Only edit files under:
+  - app/**
+  - frontend/**
+  - docs/**
+  - README.md
+  - .github/**
+  - .cursor/**
+  - POC_ERROR_REPORT.md
+- Never touch:
+  - deployment / infra directories (infra/**, deploy/**)
+  - secrets (.env, .env.*, .npmrc, any **/secrets/**)
+- Keep the total change set small and focused on the contest task.
+
+Definition of done:
+- Backend endpoint exists, uses FastAPI patterns already used in this project.
+- Frontend connects to that endpoint and shows generated tests.
+- Frontend connects to that endpoint and shows generated code.
+- A human can follow your PR description to reproduce manually.
+- If blocked, overwrite POC_ERROR_REPORT.md with a clear error report.
