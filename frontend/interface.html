@@ -150,6 +150,20 @@
                             <option value="swift">Swift</option>
                             <option value="typescript">TypeScript</option>
                         </select>
+                        <label for="framework" class="block text-white text-sm mb-1 flex items-center">
+                            <i class="fas fa-vial mr-2 text-xs"></i> Testing Framework
+                        </label>
+                        <select id="framework" class="language-select px-3 py-2 rounded-lg w-full md:w-full text-sm">
+                            <option value="" selected disabled>Select a testing framework</option>
+                            <option value="pytest">Pytest</option>
+                            <option value="unittest">Unittest</option>
+                            <option value="jest">Jest</option>
+                            <option value="mocha">Mocha</option>
+                            <option value="junit">JUnit</option>
+                            <option value="testng">TestNG</option>
+                            <option value="rspec">RSpec</option>
+                            <option value="phpunit">PHPUnit</option>
+                        </select>
                         <button id="generate-btn"
                             class="mt-auto bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-opacity-90 transition duration-300 flex items-center justify-center text-sm">
                             <i class="fas fa-sparkles mr-1 text-xs"></i> Generate Code
@@ -181,6 +195,31 @@
                             <code class="text-gray-800">
 // Your generated code will appear here
 // Describe what you need and click "Create Code"
+                            </code>
+                        </pre>
+                    </div>
+                </div>
+
+                <!-- Generated Tests - Full Width -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden mb-6 unit-tests-box" id="tests-section" style="display: none;">
+                    <div class="bg-gray-50 px-6 py-4 border-b flex justify-between items-center">
+                        <h2 class="text-lg font-semibold text-gray-800">Generated Tests</h2>
+                        <div class="flex space-x-2">
+                            <button
+                                class="copy-btn text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded flex items-center">
+                                <i class="fas fa-copy mr-1"></i> Copy
+                            </button>
+                            <button
+                                class="copy-btn text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded flex items-center">
+                                <i class="fas fa-download mr-1"></i> Download
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <pre id="generated-tests"
+                            class="bg-gray-100 p-4 rounded-lg text-sm overflow-x-auto">
+                            <code class="text-gray-800">
+// Your generated tests will appear here
                             </code>
                         </pre>
                     </div>
@@ -243,14 +282,18 @@
     </div>
 
     <script>
+        const API_BASE_URL = 'http://127.0.0.1:8000';
+
         document.addEventListener('DOMContentLoaded', function () {
             const generateBtn = document.getElementById('generate-btn');
             const queryInput = document.getElementById('query');
             const languageSelect = document.getElementById('language');
+            const frameworkSelect = document.getElementById('framework');
             const generatedCode = document.getElementById('generated-code');
+            const testsSection = document.getElementById('tests-section');
 
-            // Sample code generation (in a real app, this would call an API)
-            generateBtn.addEventListener('click', function () {
+            // Real code generation using backend API
+            generateBtn.addEventListener('click', async function () {
                 const query = queryInput.value.trim();
                 const language = languageSelect.value;
 
@@ -259,35 +302,48 @@
                     return;
                 }
 
+                if (!language) {
+                    alert('Please select a programming language');
+                    return;
+                }
+
                 // Show loading state
                 generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Generating...';
                 generateBtn.disabled = true;
 
-                // Simulate API call delay
-                setTimeout(() => {
-                    // This is just a simulation - in a real app you'd call your backend
-                    const sampleCode = generateSampleCode(query, language);
+                try {
+                    const response = await fetch(`${API_BASE_URL}/generate`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            query: query,
+                            language: language
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to generate code');
+                    }
+
+                    const data = await response.json();
 
                     // Update the UI with generated content
-                    generatedCode.querySelector('code').textContent = sampleCode.code;
-
-                    // Update quality report (simulated)
-                    updateQualityReport(sampleCode.quality);
-
-                    // Update unit tests and documentation
-                    document.querySelector('.unit-tests-box code').textContent = sampleCode.tests;
-
-                    const docBox = document.querySelector('.documentation-box');
-                    docBox.querySelector('p:nth-of-type(1)').textContent = sampleCode.doc.description;
-                    docBox.querySelector('ul').innerHTML = sampleCode.doc.params.map(p =>
-                        `<li><span class="font-medium">${p.name}</span>: ${p.desc}</li>`
-                    ).join('');
-                    docBox.querySelector('p:nth-of-type(2)').textContent = sampleCode.doc.returns;
+                    generatedCode.querySelector('code').textContent = data.generated_code || '// No code generated';
 
                     // Reset button
-                    generateBtn.innerHTML = '<i class="fas fa-magic mr-2"></i> Create Code';
+                    generateBtn.innerHTML = '<i class="fas fa-sparkles mr-1 text-xs"></i> Generate Code';
                     generateBtn.disabled = false;
-                }, 2000);
+                } catch (error) {
+                    console.error('Error generating code:', error);
+                    alert('Failed to generate code. Make sure the backend is running on ' + API_BASE_URL);
+                    generatedCode.querySelector('code').textContent = '// Error: ' + error.message;
+
+                    // Reset button
+                    generateBtn.innerHTML = '<i class="fas fa-sparkles mr-1 text-xs"></i> Generate Code';
+                    generateBtn.disabled = false;
+                }
             });
 
             // Add copy functionality to all copy buttons
@@ -315,7 +371,7 @@
 
             // Handle analysis generation buttons
             document.querySelectorAll('.generate-analysis-btn').forEach(btn => {
-                btn.addEventListener('click', function () {
+                btn.addEventListener('click', async function () {
                     const code = generatedCode.querySelector('code').textContent;
                     if (!code || code.includes('Your generated code will appear here')) {
                         alert('Please generate some code first');
@@ -323,38 +379,62 @@
                     }
 
                     const box = this.closest('.rounded-xl');
+                    const heading = box.querySelector('h3').textContent;
                     const loadingText = this.innerHTML;
                     this.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Processing...';
                     this.disabled = true;
 
-                    // Simulate analysis generation
-                    setTimeout(() => {
-                        box.querySelectorAll('.analysis-content').forEach(el => {
-                            el.classList.remove('hidden');
-                        });
-                        box.querySelector('.italic').classList.add('hidden');
+                    // Check if this is the Unit Tests button
+                    if (heading.includes('Unit Tests')) {
+                        const language = languageSelect.value;
+                        const framework = frameworkSelect.value;
 
-                        if (box.classList.contains('quality-report-box')) {
-                            updateQualityReport({
-                                readability: Math.floor(Math.random() * 60) + 40,
-                                performance: Math.floor(Math.random() * 60) + 40,
-                                security: Math.floor(Math.random() * 60) + 40
-                            });
-                        } else if (box.classList.contains('unit-tests-box')) {
-                            const tests = generateTests(code, languageSelect.value);
-                            box.querySelector('code').textContent = tests;
-                        } else if (box.classList.contains('documentation-box')) {
-                            const doc = generateDocumentation(code, languageSelect.value);
-                            box.querySelector('p:nth-of-type(1)').textContent = doc.description;
-                            box.querySelector('ul').innerHTML = doc.params.map(p =>
-                                `<li><span class="font-medium">${p.name}</span>: ${p.desc}</li>`
-                            ).join('');
-                            box.querySelector('p:nth-of-type(2)').textContent = doc.returns;
+                        if (!framework) {
+                            alert('Please select a testing framework');
+                            this.innerHTML = loadingText;
+                            this.disabled = false;
+                            return;
                         }
 
-                        this.innerHTML = loadingText;
-                        this.disabled = false;
-                    }, 1500);
+                        try {
+                            const response = await fetch(`${API_BASE_URL}/generate-tests`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    code: code,
+                                    language: language,
+                                    framework: framework
+                                })
+                            });
+
+                            if (!response.ok) {
+                                throw new Error('Failed to generate tests');
+                            }
+
+                            const data = await response.json();
+
+                            // Show the tests section and update content
+                            testsSection.style.display = 'block';
+                            document.getElementById('generated-tests').querySelector('code').textContent = data.tests || '// No tests generated';
+
+                            this.innerHTML = loadingText;
+                            this.disabled = false;
+                        } catch (error) {
+                            console.error('Error generating tests:', error);
+                            alert('Failed to generate tests. Make sure the backend is running on ' + API_BASE_URL);
+                            this.innerHTML = loadingText;
+                            this.disabled = false;
+                        }
+                    } else {
+                        // For other buttons (Quality Report, Documentation), keep the simulated behavior
+                        setTimeout(() => {
+                            alert('This feature is not yet implemented. Only Unit Tests generation is available.');
+                            this.innerHTML = loadingText;
+                            this.disabled = false;
+                        }, 500);
+                    }
                 });
             });
 

@@ -20,3 +20,17 @@ class ExtraGeneration(BaseModel):
     unit_tests: Optional[str] = Field(None, description="Unit tests for the generated code")
     documentation: Optional[str] = Field(None, description="Documentation for the generated code")
     quality_report: Optional[QualityReport] = Field(None, description="Quality report for the generated code")
+
+
+class GenerateTestsRequest(BaseModel):
+    code: str = Field(..., description="The code to generate tests for")
+    language: str = Field(..., description="Programming language (python, javascript, java, etc.)")
+    framework: str = Field(..., description="Testing framework (pytest, unittest, jest, etc.)")
+
+
+class GenerateTestsResponse(BaseModel):
+    ok: bool = Field(True, description="Request status")
+    tests: str = Field(..., description="Generated unit test code")
+    language: str = Field(..., description="Programming language used")
+    framework: str = Field(..., description="Testing framework used")
+    notes: Optional[List[str]] = Field(default=None, description="Optional notes or recommendations")
