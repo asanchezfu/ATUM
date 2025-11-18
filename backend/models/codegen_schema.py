@@ -34,3 +34,38 @@ class GenerateTestsResponse(BaseModel):
     language: str = Field(..., description="Programming language")
     framework: str = Field(..., description="Testing framework")
     notes: List[str] = Field(default_factory=list, description="Optional notes or TODOs")
+
+
+class GenerateDocsRequest(BaseModel):
+    code: str = Field(..., description="Source code to document")
+    language: Optional[str] = Field(None, description="Programming language of the code")
+    project_name: Optional[str] = Field(
+        None, description="Optional project or feature name to use inside the documentation"
+    )
+
+
+class GenerateDocsResponse(BaseModel):
+    ok: bool = Field(True, description="Whether the documentation generation succeeded")
+    filename: str = Field(..., description="Suggested filename for the generated markdown")
+    content: str = Field(..., description="Markdown documentation body")
+    notes: List[str] = Field(default_factory=list, description="Optional notes or TODOs")
+
+
+class QualityMetricResult(BaseModel):
+    name: str = Field(..., description="Metric name, e.g., Cyclomatic Complexity")
+    score: int = Field(..., ge=0, le=100, description="Numeric score between 0 and 100")
+    letter: str = Field(..., description="Letter grade (A+, A, B, ...)")
+    explanation: str = Field(..., description="Short explanation for the score")
+
+
+class QualityReportRequest(BaseModel):
+    code: str = Field(..., description="Source code to evaluate")
+    language: Optional[str] = Field(None, description="Programming language for contextual messaging")
+
+
+class QualityReportResponse(BaseModel):
+    ok: bool = Field(True, description="Whether quality analysis succeeded")
+    final_score: int = Field(..., ge=0, le=100, description="Aggregated score between 0 and 100")
+    final_grade: str = Field(..., description="Letter score summarizing all metrics")
+    metrics: List[QualityMetricResult] = Field(..., description="List of evaluated metrics")
+    suggestions: List[str] = Field(default_factory=list, description="Actionable suggestions or notes")
