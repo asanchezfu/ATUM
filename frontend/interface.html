@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atum - AI Code Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;500;600&display=swap');
+
+        :root {
+            --ghost-white: #F2F5FF;
+            --periwinkle: #BCB9F4;
+            --medium-slate-blue: #7E78EC;
+            --lavender-floral: #A675CA;
+            --puce: #BE8AA7;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--ghost-white);
+            color: #2D3748;
+        }
+
+        .logo-text {
+            font-family: 'Playfair Display', serif;
+            background: linear-gradient(135deg, var(--medium-slate-blue), var(--lavender-floral));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .sun-icon {
+            background: radial-gradient(circle, #F6E05E 30%, #EA580C 70%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, var(--medium-slate-blue), var(--periwinkle));
+        }
+
+        .documentation-box,
+        .unit-tests-box {
+            background-color: white;
+            border-left: 4px solid var(--lavender-floral);
+        }
+
+        .quality-report-box {
+            background-color: white;
+            border-left: 4px solid var(--puce);
+        }
+
+        .copy-btn {
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .language-select {
+            background-color: white;
+            border: 1px solid var(--periwinkle);
+        }
+
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--medium-slate-blue);
+            box-shadow: 0 0 0 3px rgba(126, 120, 236, 0.2);
+        }
+
+        .animate-pulse-slow {
+            animation: pulse 3s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        #generate-btn {
+            background: linear-gradient(135deg, var(--lavender-floral), var(--medium-slate-blue));
+            color: white;
+            font-weight: 600;
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.75rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        #generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(126, 120, 236, 0.35);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header with Logo -->
+        <header class="text-center mb-10">
+            <div class="flex items-center justify-center space-x-3 mb-2">
+                <div class="text-4xl sun-icon">
+                    <i class="fas fa-sun"></i>
+                </div>
+                <h1 class="text-3xl font-bold logo-text">Atum | Code Generator</h1>
+            </div>
+            <div class="text-sm text-gray-600 italic">
+                "The primordial code generator from which all else arises"
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main>
+            <!-- Query Input Section -->
+            <section class="mb-8 gradient-bg rounded-xl p-6 shadow-lg">
+                <div class="flex flex-col md:flex-row gap-4 items-stretch">
+                    <div class="flex-1">
+                        <label for="query" class="block text-white font-medium mb-2">Describe the code you want to
+                            generate</label>
+                        <textarea id="query" rows="3"
+                            class="w-full md:w-3/ px-4 py-3 rounded-lg focus:ring-2 focus:ring-white transition-all duration-300"
+                            placeholder="Create a Python Function"></textarea>
+                    </div>
+                    <div class="flex flex-col md:w-1/3 h-10 item gap-3">
+                        <label for="language" class="block text-white text-sm mb-1 flex items-center">
+                            <i class="fas fa-code mr-2 text-xs"></i> Programming Language
+                        </label>
+                        <select id="language" class="language-select px-3 py-2 rounded-lg w-full md:w-full text-sm">
+                            <option value="" selected disabled>Select a programming language</option>
+                            <option value="python">Python</option>
+                            <option value="javascript">JavaScript</option>
+                            <option value="java">Java</option>
+                            <option value="csharp">C#</option>
+                            <option value="php">PHP</option>
+                            <option value="ruby">Ruby</option>
+                            <option value="go">Go</option>
+                            <option value="rust">Rust</option>
+                            <option value="swift">Swift</option>
+                            <option value="typescript">TypeScript</option>
+                        </select>
+                        <button id="generate-btn"
+                            class="mt-auto bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-opacity-90 transition duration-300 flex items-center justify-center text-sm">
+                            <i class="fas fa-sparkles mr-1 text-xs"></i> Generate Code
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section>
+                <!-- Generated Code - Full Width -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden mb-6">
+                    <div class="bg-gray-50 px-6 py-4 border-b flex justify-between items-center">
+                        <h2 class="text-lg font-semibold text-gray-800">Generated Code</h2>
+                        <div class="flex space-x-2">
+                            <button
+                                class="copy-btn text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded flex items-center">
+                                <i class="fas fa-copy mr-1"></i> Copy
+                            </button>
+                            <button
+                                class="copy-btn text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded flex items-center">
+                                <i class="fas fa-download mr-1"></i> Download
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <pre id="generated-code"
+                            class="bg-gray-100 p-4 rounded-lg text-sm overflow-x-auto animate-pulse-slow">
+                            <code class="text-gray-800">
+// Your generated code will appear here
+// Describe what you need and click "Create Code"
+                            </code>
+                        </pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Analysis Tools Section -->
+            <section class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                <!-- Quality Report -->
+                <div
+                    class="flex flex-col items-center text-center p-6 rounded-xl shadow-lg bg-white hover:shadow-xl transition-shadow duration-300">
+                    <div
+                        class="w-20 h-20 rounded-full bg-gradient-to-br from-purple-100 to-purple-300 flex items-center justify-center mb-4">
+                        <i class="fas fa-chart-bar text-3xl text-purple-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Quality Report</h3>
+                    <p class="text-gray-600 mb-4">Get detailed analysis of your code quality metrics</p>
+                    <button
+                        class="generate-analysis-btn mt-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-full flex items-center transition-colors duration-300">
+                        <i class="fas fa-sparkles mr-2"></i> Generate
+                    </button>
+                </div>
+
+                <!-- Unit Tests -->
+                <div
+                    class="flex flex-col items-center text-center p-6 rounded-xl shadow-lg bg-white hover:shadow-xl transition-shadow duration-300">
+                    <div
+                        class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-100 to-blue-300 flex items-center justify-center mb-4">
+                        <i class="fas fa-vial text-3xl text-blue-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Unit Tests</h3>
+                    <p class="text-gray-600 mb-4">Automatically generate comprehensive test cases</p>
+                    <button
+                        class="generate-analysis-btn mt-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full flex items-center transition-colors duration-300">
+                        <i class="fas fa-sparkles mr-2"></i> Generate
+                    </button>
+                </div>
+
+                <!-- Documentation -->
+                <div
+                    class="flex flex-col items-center text-center p-6 rounded-xl shadow-lg bg-white hover:shadow-xl transition-shadow duration-300">
+                    <div
+                        class="w-20 h-20 rounded-full bg-gradient-to-br from-green-100 to-green-300 flex items-center justify-center mb-4">
+                        <i class="fas fa-book text-3xl text-green-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Documentation</h3>
+                    <p class="text-gray-600 mb-4">Create professional documentation instantly</p>
+                    <button
+                        class="generate-analysis-btn mt-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-full flex items-center transition-colors duration-300">
+                        <i class="fas fa-sparkles mr-2"></i> Generate
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-gray-500 text-sm">
+            <p>Atum Code Generator - Andres Felipe Sanchez</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const generateBtn = document.getElementById('generate-btn');
+            const queryInput = document.getElementById('query');
+            const languageSelect = document.getElementById('language');
+            const generatedCode = document.getElementById('generated-code');
+
+            // Sample code generation (in a real app, this would call an API)
+            generateBtn.addEventListener('click', function () {
+                const query = queryInput.value.trim();
+                const language = languageSelect.value;
+
+                if (!query) {
+                    alert('Please describe the code you want to generate');
+                    return;
+                }
+
+                // Show loading state
+                generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Generating...';
+                generateBtn.disabled = true;
+
+                // Simulate API call delay
+                setTimeout(() => {
+                    // This is just a simulation - in a real app you'd call your backend
+                    const sampleCode = generateSampleCode(query, language);
+
+                    // Update the UI with generated content
+                    generatedCode.querySelector('code').textContent = sampleCode.code;
+
+                    // Update quality report (simulated)
+                    updateQualityReport(sampleCode.quality);
+
+                    // Update unit tests and documentation
+                    document.querySelector('.unit-tests-box code').textContent = sampleCode.tests;
+
+                    const docBox = document.querySelector('.documentation-box');
+                    docBox.querySelector('p:nth-of-type(1)').textContent = sampleCode.doc.description;
+                    docBox.querySelector('ul').innerHTML = sampleCode.doc.params.map(p =>
+                        `<li><span class="font-medium">${p.name}</span>: ${p.desc}</li>`
+                    ).join('');
+                    docBox.querySelector('p:nth-of-type(2)').textContent = sampleCode.doc.returns;
+
+                    // Reset button
+                    generateBtn.innerHTML = '<i class="fas fa-magic mr-2"></i> Create Code';
+                    generateBtn.disabled = false;
+                }, 2000);
+            });
+
+            // Add copy functionality to all copy buttons
+            document.querySelectorAll('.copy-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    let content = '';
+                    const box = this.closest('.rounded-xl');
+
+                    if (box.querySelector('pre code')) {
+                        content = box.querySelector('pre code').textContent;
+                    } else if (box.querySelector('.bg-gray-100')) {
+                        content = box.querySelector('.bg-gray-100').textContent;
+                    }
+
+                    if (content) {
+                        navigator.clipboard.writeText(content);
+                        const originalText = this.innerHTML;
+                        this.innerHTML = '<i class="fas fa-check mr-1"></i> Copied!';
+                        setTimeout(() => {
+                            this.innerHTML = originalText;
+                        }, 2000);
+                    }
+                });
+            });
+
+            // Handle analysis generation buttons
+            document.querySelectorAll('.generate-analysis-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const code = generatedCode.querySelector('code').textContent;
+                    if (!code || code.includes('Your generated code will appear here')) {
+                        alert('Please generate some code first');
+                        return;
+                    }
+
+                    const box = this.closest('.rounded-xl');
+                    const loadingText = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Processing...';
+                    this.disabled = true;
+
+                    // Simulate analysis generation
+                    setTimeout(() => {
+                        box.querySelectorAll('.analysis-content').forEach(el => {
+                            el.classList.remove('hidden');
+                        });
+                        box.querySelector('.italic').classList.add('hidden');
+
+                        if (box.classList.contains('quality-report-box')) {
+                            updateQualityReport({
+                                readability: Math.floor(Math.random() * 60) + 40,
+                                performance: Math.floor(Math.random() * 60) + 40,
+                                security: Math.floor(Math.random() * 60) + 40
+                            });
+                        } else if (box.classList.contains('unit-tests-box')) {
+                            const tests = generateTests(code, languageSelect.value);
+                            box.querySelector('code').textContent = tests;
+                        } else if (box.classList.contains('documentation-box')) {
+                            const doc = generateDocumentation(code, languageSelect.value);
+                            box.querySelector('p:nth-of-type(1)').textContent = doc.description;
+                            box.querySelector('ul').innerHTML = doc.params.map(p =>
+                                `<li><span class="font-medium">${p.name}</span>: ${p.desc}</li>`
+                            ).join('');
+                            box.querySelector('p:nth-of-type(2)').textContent = doc.returns;
+                        }
+
+                        this.innerHTML = loadingText;
+                        this.disabled = false;
+                    }, 1500);
+                });
+            });
+
+            function generateTests(code, language) {
+                // This would be more sophisticated in a real app
+                if (language === 'python') {
+                    return `import unittest
+from code import generated_function
+
+class TestGeneratedFunction(unittest.TestCase):
+    def test_basic_functionality(self):
+        # Test basic functionality
+        self.assertEqual(len(generated_function(5)), 5)
+        
+if __name__ == '__main__':
+    unittest.main()`;
+                } else if (language === 'javascript') {
+                    return `const assert = require('assert');
+const { generatedFunction } = require('./code');
+
+describe('Generated Function', () => {
+    it('should return correct length', () => {
+        assert.strictEqual(generatedFunction(5).length, 5);
+    });
+});`;
+                }
+                return `// Unit tests for ${language} would be generated here`;
+            }
+
+            function generateDocumentation(code, language) {
+                // This would analyze the code structure in a real app
+                return {
+                    description: `This ${language} function was automatically generated. It performs the requested operation efficiently.`,
+                    params: [
+                        { name: 'input', desc: 'The input parameter for the function' }
+                    ],
+                    returns: 'The result of the operation as specified in the generated code.'
+                };
+            }
+
+            // Sample code generator function
+            function generateSampleCode(query, language) {
+                const baseDescription = `This ${language} code ${query.toLowerCase()}`;
+
+                let code = '';
+                let tests = '';
+
+                switch (language) {
+                    case 'python':
+                        code = `def ${query.split(' ')[3] || 'generated_function'}(n):
+    """${baseDescription}"""
+    result = []
+    a, b = 0, 1
+    for _ in range(n):
+        result.append(a)
+        a, b = b, a + b
+    return result`;
+                        tests = `import unittest
+from code import generated_function
+
+class TestGeneratedFunction(unittest.TestCase):
+    def test_fibonacci(self):
+        self.assertEqual(generated_function(5), [0, 1, 1, 2, 3])
+        
+if __name__ == '__main__':
+    unittest.main()`;
+                        break;
+
+                    case 'javascript':
+                        code = `function ${query.split(' ')[3] || 'generatedFunction'}(n) {
+    // ${baseDescription}
+    let result = [];
+    let a = 0, b = 1;
+    for (let i = 0; i < n; i++) {
+        result.push(a);
+        [a, b] = [b, a + b];
+    }
+    return result;
+}`;
+                        tests = `const assert = require('assert');
+const { generatedFunction } = require('./code');
+
+describe('Generated Function', () => {
+    it('should return Fibonacci sequence', () => {
+        assert.deepStrictEqual(generatedFunction(5), [0, 1, 1, 2, 3]);
+    });
+});`;
+                        break;
+
+                    default:
+                        code = `// ${baseDescription}
+// This is a sample generated ${language} code
+// The actual implementation would vary based on your request`;
+                        tests = `// Unit tests for ${language} code would be generated here`;
+                }
+
+                return {
+                    code,
+                    tests,
+                    quality: {
+                        readability: Math.floor(Math.random() * 60) + 40,
+                        performance: Math.floor(Math.random() * 60) + 40,
+                        security: Math.floor(Math.random() * 60) + 40
+                    },
+                    doc: {
+                        description: baseDescription + '. This function is designed to be efficient and easy to understand.',
+                        params: [
+                            { name: 'n', desc: 'The number of elements to generate in the sequence' }
+                        ],
+                        returns: 'An array containing the generated sequence of numbers.'
+                    }
+                };
+            }
+
+            function updateQualityReport(quality) {
+                document.querySelectorAll('.w-full.bg-gray-200 .bg-blue-600')[0].style.width = quality.readability + '%';
+                document.querySelectorAll('.w-full.bg-gray-200 .bg-green-600')[0].style.width = quality.performance + '%';
+                document.querySelectorAll('.w-full.bg-gray-200 .bg-yellow-500')[0].style.width = quality.security + '%';
+
+                document.querySelectorAll('.text-gray-500')[0].textContent = quality.readability + '%';
+                document.querySelectorAll('.text-gray-500')[1].textContent = quality.performance + '%';
+                document.querySelectorAll('.text-gray-500')[2].textContent = quality.security + '%';
+            }
+        });
+    </script>
+</body>
+
+</html>
